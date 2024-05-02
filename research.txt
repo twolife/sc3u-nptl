@@ -1,0 +1,30 @@
+
+pthread_kill() is used by the game as a mean to know if a thread exist or not.
+It was working with LinuxThreads, but a call to that function crash with NPTL if the pthread_t isn't valid.
+
+https://bugzilla.redhat.com/show_bug.cgi?id=169995
+
+Maybe change the binary to never make those call to pthread_kill(thread_id, 0) ?
+
+push    0			; 6A00
+mov     eax, [eax+10h]		; 8B40 10
+push    eax			; 50
+call    _pthread_kill		; E8C1 8AD3 FF		basically return 0 if arg1/eax != 0
+test    eax, eax		; 85C0
+setz    al			; OF94 C0
+movzx   eax, al			; 0FB6 C0
+[...]
+
+Could be patched to:
+
+mov     eax, [eax+10h]		; 8B40 10
+test    eax, eax		; 85C0
+setz    al			; OF94 C0
+xor     al,1			; 3401
+NOP     			; 9090 9090 9090
+movzx   eax, al			; 0FB6 C0
+[...]
+
+
+They use SIGSTOP/SIGCONT as a way of doing synchronisation between threads.
+This is Bad ™©®
