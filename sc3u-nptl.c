@@ -65,7 +65,7 @@ void sig_usr_handler(int sig) {
     }
 }
 
-void __attribute__((constructor)) modernlinuxsetup() {
+void _init() {
     WantDebugLogging = 0;
     char *p = getenv("DEBUG");
 
@@ -74,7 +74,7 @@ void __attribute__((constructor)) modernlinuxsetup() {
         fprintf(stderr, "sc3u-nptl - hijacking pthread_kill() & ");
         fprintf(stderr, "setting up SIGUSR1 & SIGUSR2 handler\n");
     }
-    real_pthread_kill = dlsym(RTLD_NEXT, "pthread_kill");
+    *(void **) (&real_pthread_kill) = dlsym(RTLD_NEXT, "pthread_kill");
     sigemptyset(&sigset_usr1);
     sigemptyset(&sigset_usr2);
     sigaddset(&sigset_usr1, SIGUSR1);
@@ -87,7 +87,7 @@ int pthread_kill(pthread_t thread, int sig) {
     int ret;
 
     if (WantDebugLogging)
-        fprintf(stderr, "thread[%d] pthread_kill(%d, %d)", gettid(), thread, sig);
+        fprintf(stderr, "thread[%d] pthread_kill(%ld, %d)", gettid(), thread, sig);
 
     if(thread == 0) {
         ret = 3;  // ESRCH
