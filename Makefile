@@ -1,4 +1,3 @@
-
 BINS=sc3u-nptl.so
 
 all: $(BINS)
