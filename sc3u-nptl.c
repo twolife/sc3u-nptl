@@ -37,6 +37,7 @@
 
 #define _GNU_SOURCE
 #include <dlfcn.h>
+#include <errno.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -44,12 +45,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-int WantDebugLogging;
-int (*real_pthread_kill)(pthread_t, int);
-sigset_t sigset_usr1;
-sigset_t sigset_usr2;
+static int WantDebugLogging;
+static int (*real_pthread_kill)(pthread_t, int);
+static sigset_t sigset_usr1;
+static sigset_t sigset_usr2;
 
-void sig_usr_handler(int sig) {
+static void sig_usr_handler(int sig) {
     if (WantDebugLogging)
         fprintf(stderr, "thread[%d] sig_usr_handler(%d)\n", gettid(), sig);
 
@@ -65,9 +66,9 @@ void sig_usr_handler(int sig) {
     }
 }
 
-void _init() {
+void _init(void) {
     WantDebugLogging = 0;
-    char *p = getenv("DEBUG");
+    const char *p = getenv("DEBUG");
 
     if(p != NULL && (strcmp(p, "0") != 0)) {
         WantDebugLogging = 1;
@@ -90,12 +91,12 @@ int pthread_kill(pthread_t thread, int sig) {
         fprintf(stderr, "thread[%d] pthread_kill(%ld, %d)", gettid(), thread, sig);
 
     if(thread == 0) {
-        ret = 3;  // ESRCH
+        ret = ESRCH;
     } else if (sig == 0) {
         ret = 0;
     } else {
-        if (sig == 19) sig = 10; // SIGSTOP -> SIGUSR1
-        if (sig == 18) sig = 12; // SIGCONT -> SIGUSR2
+        if (sig == SIGSTOP) sig = SIGUSR1;
+        if (sig == SIGCONT) sig = SIGUSR2;
 
         ret = real_pthread_kill(thread, sig);
     }
