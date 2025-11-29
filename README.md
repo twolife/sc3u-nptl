@@ -11,6 +11,7 @@ You are most likely running a Linux distribution on a shiny 64 bits CPU, but the
 You will also need to:
  - install the [OSS Proxy Daemon](https://github.com/libfuse/osspd)
  - install [patchelf](https://github.com/NixOS/patchelf)
+ - install i386 version of a bunch of libs. In the Debian/Ubuntu world, you will need to install the *libsdl1.2debian:i386* and *libsmpeg0t64:i386* packages.
  - download and install a [really old version of libstdc++](https://snapshot.debian.org/archive/debian/20060714T000000Z/pool/main/g/gcc-2.95/libstdc%2B%2B2.10-glibc2.2_2.95.4-27_i386.deb)
  - download a very old `libopenal-0.0.so` with a specific ABI, released in 2000. I can't even find source code for a such ancien version.
    All I could find is a binary version bundled at [https://www.improbability.net/loki/](https://www.improbability.net/loki/loki_compat_libs-1.5.tar.bz2). This version cames from the original UT99 release. Place it along side the game files.
